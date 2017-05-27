@@ -1,8 +1,8 @@
 name: MasterPluginControl
-main: de.Impelon.masterplugincontrol.MasterControlMain
-version: 1.0.1
+main: de.impelon.masterplugincontrol.MasterControlMain
+version: 1.0.2
 author: Impelon
-website: https://github.com/Impelon
+website: https://github.com/Impelon/MasterPluginControl
 
 commands:
   mpc:
