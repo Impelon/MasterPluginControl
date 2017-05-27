@@ -1,0 +1,14 @@
+name: MasterPluginControl
+main: de.Impelon.masterplugincontrol.MasterControlMain
+version: 1.0.1
+author: Impelon
+website: https://github.com/Impelon
+
+commands:
+  mpc:
+    usage: Unknown! Try '/mpc help'
+    description: Main MasterPluginControl-Plugin command
+    
+permissions:
+  mpc.*:
+    description: Allows all MasterPluginControl-Plugin commands
