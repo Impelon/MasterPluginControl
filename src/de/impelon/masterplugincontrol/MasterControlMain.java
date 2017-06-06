@@ -1,7 +1,6 @@
 package de.impelon.masterplugincontrol;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 import org.bukkit.ChatColor;
@@ -17,8 +16,6 @@ public class MasterControlMain extends JavaPlugin {
 	private static MasterControlMain main;
 	private MasterControlExecutor mpcexe;
 	
-	private String[] helppages;
-
 	@Override
 	public void onEnable() {
 		main = this;
