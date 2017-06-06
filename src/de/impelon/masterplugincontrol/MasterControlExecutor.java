@@ -2,13 +2,11 @@ package de.impelon.masterplugincontrol;
 
 import java.io.File;
 
-import org.bukkit.ChatColor;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.Plugin;
-import org.bukkit.scheduler.BukkitRunnable;
 
 public class MasterControlExecutor implements CommandExecutor {
 
@@ -22,68 +20,66 @@ public class MasterControlExecutor implements CommandExecutor {
 		if (sender instanceof Player) {
 			p = (Player) sender;
 			if (!p.hasPermission("mpc.*")) {
-				MasterControlMain.sendMessage(sender, MasterControlMain.main.getPLName() + MasterControlMain.main.getConfig().getString("mpc.messages.general.noPerm"));
+				MasterControlMain.getInstance().sendMessageWithPrefix(sender, MasterControlMain.getInstance().getConfig().getString("mpc.messages.general.noPerm"));
 				return true;
 			}
 		}
-
+		
 		if (args[0].equalsIgnoreCase("info")) {
-			if (p != null) {
-				String version = ChatColor.WHITE + MasterControlMain.main.getDescription().getVersion();
-				String author = ChatColor.WHITE + MasterControlMain.main.getDescription().getAuthors().get(0);
-				String website = ChatColor.WHITE + MasterControlMain.main.getDescription().getWebsite();
-				MasterControlMain.sendMessage(sender, MasterControlMain.main.getPLName());
-				MasterControlMain.sendMessage(sender, ChatColor.ITALIC + " version: " + version);
-				MasterControlMain.sendMessage(sender, ChatColor.ITALIC + " by: " + author);
-				MasterControlMain.sendMessage(sender, ChatColor.ITALIC + " website: " + website);
-			} else
-				MasterControlMain.sendMessage(sender, "ver: " + MasterControlMain.main.getDescription().getVersion() + " by: " + MasterControlMain.main.getDescription().getAuthors().get(0));
+			String version = MasterControlMain.getInstance().getDescription().getVersion();
+			String website = MasterControlMain.getInstance().getDescription().getWebsite();
+			StringBuilder buffer = new StringBuilder();
+			for (String author : MasterControlMain.getInstance().getDescription().getAuthors())
+				buffer.append(author + ", ");
+			String authors = buffer.substring(0, buffer.length() - 2);
+			
+			MasterControlMain.getInstance().sendMessageWithPrefix(sender, MasterControlMain.getInstance().getConfig().getString("mpc.messages.commands.info")
+					.replace("@version", version).replace("@authors", authors).replace("@website", website));
 			return true;
 		}
 
 		else if (args[0].equalsIgnoreCase("help")) {
-			int page = 0;
+			int page = 1;
 			try {
-				page = args.length > 1 ? Integer.valueOf(args[1]) % (MasterControlMain.main.getHelp(-1).length / 8) : 0;
-			} catch (NumberFormatException e) {
-				MasterControlMain.sendMessageWithPrefix(sender, "'" + args[1] + "'" + MasterControlMain.main.getConfig().getString("mpc.messages.commands.restart.noNumber"));
+				page = args.length > 1 ? Integer.parseInt(args[1]) % (MasterControlMain.getInstance().getHelp(-1).size() / 8) : page;
+			} catch (NumberFormatException ex) {
+				MasterControlMain.getInstance().sendMessageWithPrefix(sender, MasterControlMain.getInstance().getConfig().getString("mpc.messages.general.noNumber")
+						.replace("@number", "'" + args[1] + "'"));
 			}
-			if (p != null)
-				MasterControlMain.sendMessageWithPrefix(sender, ChatColor.BOLD + "MasterPluginControl | Help | Page " + page);
-			else
-				MasterControlMain.sendMessage(sender, "MasterPluginControl | Help | Page " + page);
-			for (String line : MasterControlMain.main.getHelp(page))
+			MasterControlMain.getInstance().sendMessageWithPrefix(sender, MasterControlMain.getInstance().getConfig().getString("mpc.messages.commands.help.header")
+					.replace("@plugin", MasterControlMain.getInstance().getName()).replace("@page", String.valueOf(page)));
+			for (String line : MasterControlMain.getInstance().getHelp(page))
 				if (line != null)
-					MasterControlMain.sendMessage(sender, line);
+					MasterControlMain.getInstance().sendMessage(sender, line);
 			return true;
 		}
 
 		else if (args[0].equalsIgnoreCase("reload")) {
-			if (p != null) {
-				MasterControlMain.main.loadConfig();
-				MasterControlMain.sendMessageWithPrefix(sender, MasterControlMain.main.getConfig().getString("mpc.messages.general.reloadSuccessful"));
-			} else
-				MasterControlMain.main.loadConfig();
+			MasterControlMain.getInstance().loadConfig();
+			if (sender instanceof Player)
+				MasterControlMain.getInstance().sendMessageWithPrefix(sender, MasterControlMain.getInstance().getConfig().getString("mpc.messages.general.reloadSuccessful"));
 			return true;
 		}
 
 		else if (args[0].equalsIgnoreCase("list")) {
-			MasterControlMain.sendMessageWithPrefix(sender, MasterControlMain.main.getConfig().getString("mpc.messages.general.plugins"));
-			MasterControlMain.sendMessage(sender, MasterControlMain.main.getPlugins().toString());
+			MasterControlMain.getInstance().sendMessageWithPrefix(sender, MasterControlMain.getInstance().getConfig().getString("mpc.messages.general.plugins"));
+			MasterControlMain.getInstance().sendMessage(sender, MasterControlMain.getInstance().getPlugins().toString());
 			return true;
 		}
 
 		else if (args[0].equalsIgnoreCase("stop")) {
 			if (args.length == 1) {
-				MasterControlMain.sendMessageWithPrefix(sender, MasterControlMain.main.getConfig().getString("mpc.messages.general.plugins"));
-				MasterControlMain.sendMessage(sender, MasterControlMain.main.getPlugins().toString());
+				MasterControlMain.getInstance().sendMessageWithPrefix(sender, MasterControlMain.getInstance().getConfig().getString("mpc.messages.general.plugins"));
+				MasterControlMain.getInstance().sendMessage(sender, MasterControlMain.getInstance().getPlugins().toString());
 			} else {
-				if (MasterControlMain.main.getServer().getPluginManager().getPlugin(args[1]) == null)
-					MasterControlMain.sendMessageWithPrefix(sender, MasterControlMain.main.getConfig().getString("mpc.messages.commands.stop.noPlugin") + "'" + args[1] + "'");
+				final Plugin plugin = MasterControlMain.getInstance().getServer().getPluginManager().getPlugin(args[1]);
+				if (plugin == null)
+					MasterControlMain.getInstance().sendMessageWithPrefix(sender, MasterControlMain.getInstance().getConfig().getString("mpc.messages.general.noPlugin")
+							.replace("@plugin", "'" + args[1] + "'"));
 				else {
-					final Plugin pl = MasterControlMain.main.getServer().getPluginManager().getPlugin(args[1]);
-					MasterControlMain.main.getServer().getPluginManager().disablePlugin(pl);
-					MasterControlMain.sendMessageWithPrefix(sender, MasterControlMain.main.getConfig().getString("mpc.messages.commands.stop.sucessful") + "'" + args[1] + "'");
+					MasterControlMain.getInstance().getServer().getPluginManager().disablePlugin(plugin);
+					MasterControlMain.getInstance().sendMessageWithPrefix(sender, MasterControlMain.getInstance().getConfig().getString("mpc.messages.commands.stop.sucessful")
+							.replace("@plugin", "'" + args[1] + "'"));
 				}
 			}
 			return true;
@@ -91,15 +87,17 @@ public class MasterControlExecutor implements CommandExecutor {
 
 		else if (args[0].equalsIgnoreCase("start")) {
 			if (args.length == 1) {
-				MasterControlMain.sendMessageWithPrefix(sender, MasterControlMain.main.getConfig().getString("mpc.messages.general.plugins"));
-				MasterControlMain.sendMessage(sender, MasterControlMain.main.getPlugins().toString());
+				MasterControlMain.getInstance().sendMessageWithPrefix(sender, MasterControlMain.getInstance().getConfig().getString("mpc.messages.general.plugins"));
+				MasterControlMain.getInstance().sendMessage(sender, MasterControlMain.getInstance().getPlugins().toString());
 			} else {
-				if (MasterControlMain.main.getServer().getPluginManager().getPlugin(args[1]) == null)
-					MasterControlMain.sendMessageWithPrefix(sender, MasterControlMain.main.getConfig().getString("mpc.messages.general.noPlugin") + "'" + args[1] + "'");
+				final Plugin plugin = MasterControlMain.getInstance().getServer().getPluginManager().getPlugin(args[1]);
+				if (plugin == null)
+					MasterControlMain.getInstance().sendMessageWithPrefix(sender, MasterControlMain.getInstance().getConfig().getString("mpc.messages.general.noPlugin")
+							.replace("@plugin", "'" + args[1] + "'"));
 				else {
-					final Plugin pl = MasterControlMain.main.getServer().getPluginManager().getPlugin(args[1]);
-					MasterControlMain.main.getServer().getPluginManager().enablePlugin(pl);
-					MasterControlMain.sendMessageWithPrefix(sender, MasterControlMain.main.getConfig().getString("mpc.messages.commands.start.sucessful") + "'" + args[1] + "'");
+					MasterControlMain.getInstance().getServer().getPluginManager().enablePlugin(plugin);
+					MasterControlMain.getInstance().sendMessageWithPrefix(sender, MasterControlMain.getInstance().getConfig().getString("mpc.messages.commands.start.sucessful")
+							.replace("@plugin", "'" + args[1] + "'"));
 				}
 			}
 			return true;
@@ -107,49 +105,43 @@ public class MasterControlExecutor implements CommandExecutor {
 
 		else if (args[0].equalsIgnoreCase("load")) {
 			if (args.length == 1)
-				MasterControlMain.sendMessageWithPrefix(sender, MasterControlMain.main.getConfig().getString("mpc.messages.commands.load.noArgs"));
+				MasterControlMain.getInstance().sendMessageWithPrefix(sender, MasterControlMain.getInstance().getConfig().getString("mpc.messages.commands.load.noArgs"));
 			else {
-				File file = new File("plugins/" + args[1] + ".jar");
-				if (MasterControlMain.main.getServer().getPluginManager().getPlugin(args[1]) == null)
+				File file = new File((args.length > 1 ? (args[2].equalsIgnoreCase("-i") ? args[1] : "plugins/" + args[1] + ".jar") : "plugins/" + args[1] + ".jar"));
+				if (MasterControlMain.getInstance().getServer().getPluginManager().getPlugin(args[1]) == null)
 					try {
-						Plugin pl = MasterControlMain.main.getServer().getPluginManager().loadPlugin(file);
-						MasterControlMain.main.getServer().getPluginManager().enablePlugin(pl);
-						MasterControlMain.sendMessageWithPrefix(sender, MasterControlMain.main.getConfig().getString("mpc.messages.commands.start.sucessful") + "'" + args[1] + "'");
+						final Plugin plugin = MasterControlMain.getInstance().getServer().getPluginManager().loadPlugin(file);
+						MasterControlMain.getInstance().getServer().getPluginManager().enablePlugin(plugin);
+						MasterControlMain.getInstance().sendMessageWithPrefix(sender, MasterControlMain.getInstance().getConfig().getString("mpc.messages.commands.start.sucessful")
+								.replace("@plugin", "'" + args[1] + "'"));
 					} catch (Exception e) {
-						MasterControlMain.sendMessageWithPrefix(sender, MasterControlMain.main.getConfig().getString("mpc.messages.general.noPlugin") + "'" + args[1] + ".jar'");
-						MasterControlMain.main.getLogger().warning(e.toString());
+						MasterControlMain.getInstance().sendMessageWithPrefix(sender, MasterControlMain.getInstance().getConfig().getString("mpc.messages.general.noPlugin")
+								.replace("@plugin", "'" + file.getPath() + "'"));
+						MasterControlMain.getInstance().getLogger().warning(e.toString());
 					}
 				else
-					MasterControlMain.sendMessageWithPrefix(sender, MasterControlMain.main.getConfig().getString("mpc.messages.commands.load.loaded"));
+					MasterControlMain.getInstance().sendMessageWithPrefix(sender, MasterControlMain.getInstance().getConfig().getString("mpc.messages.commands.load.loaded"));
 			}
 			return true;
 		}
 
 		else if (args[0].equalsIgnoreCase("restart")) {
-			int delay = 20;
-			if (args.length > 2)
-				try {
-					delay = Integer.parseInt(args[2]);
-				} catch (NumberFormatException e) {
-					MasterControlMain.sendMessageWithPrefix(sender, "'" + args[2] + "'" + MasterControlMain.main.getConfig().getString("mpc.messages.commands.restart.noNumber"));
-				}
+			long delay = 20;
+			try {
+				delay = args.length > 2 ? Long.parseLong(args[2]) : delay;
+			} catch (NumberFormatException ex) {
+				MasterControlMain.getInstance().sendMessageWithPrefix(sender, MasterControlMain.getInstance().getConfig().getString("mpc.messages.general.noNumber")
+						.replace("@number", "'" + args[2] + "'"));
+			}
 			if (args.length == 1) {
-				MasterControlMain.sendMessageWithPrefix(sender, MasterControlMain.main.getConfig().getString("mpc.messages.general.plugins"));
-				MasterControlMain.sendMessage(sender, MasterControlMain.main.getPlugins().toString());
+				MasterControlMain.getInstance().sendMessageWithPrefix(sender, MasterControlMain.getInstance().getConfig().getString("mpc.messages.general.plugins"));
+				MasterControlMain.getInstance().sendMessage(sender, MasterControlMain.getInstance().getPlugins().toString());
 			} else {
-				if (MasterControlMain.main.getServer().getPluginManager().getPlugin(args[1]) == null)
-					MasterControlMain.sendMessageWithPrefix(sender, MasterControlMain.main.getConfig().getString("mpc.messages.general.noPlugin") + "'" + args[1] + "'");
-				else {
-					final Plugin pl = MasterControlMain.main.getServer().getPluginManager().getPlugin(args[1]);
-					MasterControlMain.main.getServer().getPluginManager().disablePlugin(pl);
-					new BukkitRunnable() {
-						@Override
-						public void run() {
-							MasterControlMain.main.getServer().getPluginManager().enablePlugin(pl);
-							MasterControlMain.sendMessageWithPrefix(sender, MasterControlMain.main.getConfig().getString("mpc.messages.commands.start.sucessful") + "'" + args[1] + "'");
-						}
-					}.runTaskLater(MasterControlMain.main, delay);
-				}
+				final Plugin plugin = MasterControlMain.getInstance().getServer().getPluginManager().getPlugin(args[1]);
+				if (plugin == null)
+					MasterControlMain.getInstance().sendMessageWithPrefix(sender, MasterControlMain.getInstance().getConfig().getString("mpc.messages.general.noPlugin") + "'" + args[1] + "'");
+				else
+					MasterControlMain.getInstance().restartPlugin(sender, plugin, delay);
 			}
 			return true;
 		}
