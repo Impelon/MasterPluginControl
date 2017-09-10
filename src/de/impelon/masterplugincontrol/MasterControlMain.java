@@ -47,7 +47,7 @@ public class MasterControlMain extends JavaPlugin {
 		
 		this.getConfig().addDefault("mpc.commands.help.linesperpage", 8);
 		
-		this.getConfig().addDefault("mpc.messages.commands.help.header", "&l@plugin | Help | Page @page");
+		this.getConfig().addDefault("mpc.messages.commands.help.header", "&l@plugin | Help | Page @page/@maxpage");
 		this.getConfig().addDefault("mpc.messages.commands.help.help", "&8/mpc help <page>&r - &odisplays this message");
 		this.getConfig().addDefault("mpc.messages.commands.help.info", "&8/mpc info <page>&r - &odisplays information on MasterPluginControl itself");
 		this.getConfig().addDefault("mpc.messages.commands.help.reload", "&8/mpc reload&r - &oreloads the config.yml");
@@ -65,7 +65,7 @@ public class MasterControlMain extends JavaPlugin {
 		this.getConfig().addDefault("mpc.messages.commands.list.disabeled", "&4\u2022 &8&o@plugin&r");
 		this.getConfig().addDefault("mpc.messages.commands.info", "\n&oversion:&r @version\n&oby:&r @authors\n&owebsite:&r @website");
 		
-		this.getConfig().addDefault("mpc.messages.general.noNumber", "@number ist keine valide Zahl!");
+		this.getConfig().addDefault("mpc.messages.general.noNumber", "'@number' ist keine valide Zahl!");
 		this.getConfig().addDefault("mpc.messages.general.noPlugin", "Plugin could not be found: @plugin");
 		this.getConfig().addDefault("mpc.messages.general.plugins", "Avalible Plugins:");
 		this.getConfig().addDefault("mpc.messages.general.noPerm", "You do not have the permission to use this command");
@@ -77,16 +77,16 @@ public class MasterControlMain extends JavaPlugin {
 	}
 	
 	public List<String> getHelp(int page) {
-		int linesperpage = this.getConfig().getInt("mpc.commands.help.linesperpage");
-		List<String> helppages = new ArrayList<String>();
+		int linesperpage = this.getConfig().getInt("mpc.commands.help.linesperpage", 8);
+		ArrayList<String> helppages = new ArrayList<String>();
 		ConfigurationSection helpsection = this.getConfig().getConfigurationSection("mpc.messages.commands.help");
 		for (String key : helpsection.getKeys(false))
-			if (key != "header")
+			if (!key.equals("header"))
 				helppages.add(helpsection.getString(key));
 		if (page < 1)
 			return helppages;
-		page %= helppages.size() / linesperpage;
-		return helppages.subList((page - 1) * linesperpage, page * linesperpage);
+		page = (page - 1) % ((helppages.size() / linesperpage) + 1) + 1;
+		return helppages.subList((page - 1) * linesperpage, Math.min(page * linesperpage, helppages.size()));
 	}
 	
 	public void sendMessage(CommandSender sender, String message) {
