@@ -40,14 +40,15 @@ public class MasterControlExecutor implements CommandExecutor {
 
 		else if (args[0].equalsIgnoreCase("help")) {
 			int page = 1;
+			int maxpage = (MasterControlMain.getInstance().getHelp(-1).size() / MasterControlMain.getInstance().getConfig().getInt("mpc.commands.help.linesperpage", 8)) + 1;
 			try {
-				page = args.length > 1 ? Integer.parseInt(args[1]) % (MasterControlMain.getInstance().getHelp(-1).size() / 8) : page;
+				page = args.length > 1 ? (Integer.parseInt(args[1]) - 1) % maxpage + 1 : page;
 			} catch (NumberFormatException ex) {
 				MasterControlMain.getInstance().sendMessageWithPrefix(sender, MasterControlMain.getInstance().getConfig().getString("mpc.messages.general.noNumber")
-						.replace("@number", "'" + args[1] + "'"));
+						.replace("@number", args[1]));
 			}
 			MasterControlMain.getInstance().sendMessageWithPrefix(sender, MasterControlMain.getInstance().getConfig().getString("mpc.messages.commands.help.header")
-					.replace("@plugin", MasterControlMain.getInstance().getName()).replace("@page", String.valueOf(page)));
+					.replace("@plugin", MasterControlMain.getInstance().getName()).replace("@page", String.valueOf(page)).replace("@maxpage", String.valueOf(maxpage)));
 			for (String line : MasterControlMain.getInstance().getHelp(page))
 				if (line != null)
 					MasterControlMain.getInstance().sendMessage(sender, line);
