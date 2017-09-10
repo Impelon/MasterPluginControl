@@ -65,7 +65,7 @@ public class MasterControlMain extends JavaPlugin {
 		this.getConfig().addDefault("mpc.messages.commands.list.disabeled", "&4\u2022 &8&o@plugin&r");
 		this.getConfig().addDefault("mpc.messages.commands.info", "\n&oversion:&r @version\n&oby:&r @authors\n&owebsite:&r @website");
 		
-		this.getConfig().addDefault("mpc.messages.general.noNumber", "'@number' is not a valid Number!");
+		this.getConfig().addDefault("mpc.messages.general.noNumber", "'@number' is not a valid number");
 		this.getConfig().addDefault("mpc.messages.general.noPlugin", "Plugin could not be found: @plugin");
 		this.getConfig().addDefault("mpc.messages.general.plugins", "Avalible Plugins:");
 		this.getConfig().addDefault("mpc.messages.general.noPerm", "You do not have the permission to use this command");
