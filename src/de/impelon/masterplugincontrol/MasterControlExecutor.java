@@ -40,7 +40,7 @@ public class MasterControlExecutor implements CommandExecutor {
 
 		else if (args[0].equalsIgnoreCase("help")) {
 			int page = 1;
-			int maxpage = (MasterControlMain.getInstance().getHelp(-1).size() / MasterControlMain.getInstance().getConfig().getInt("mpc.commands.help.linesperpage", 8)) + 1;
+			int maxpage = (int) Math.ceil(MasterControlMain.getInstance().getHelp(-1).size() / (double) MasterControlMain.getInstance().getConfig().getInt("mpc.commands.help.linesperpage", 8));
 			try {
 				page = args.length > 1 ? (Integer.parseInt(args[1]) - 1) % maxpage + 1 : page;
 			} catch (NumberFormatException ex) {
