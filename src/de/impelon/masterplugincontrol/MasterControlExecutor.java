@@ -108,7 +108,7 @@ public class MasterControlExecutor implements CommandExecutor {
 			if (args.length == 1)
 				MasterControlMain.getInstance().sendMessageWithPrefix(sender, MasterControlMain.getInstance().getConfig().getString("mpc.messages.commands.load.noArgs"));
 			else {
-				File file = new File((args.length > 1 ? (args[2].equalsIgnoreCase("-i") ? args[1] : "plugins/" + args[1] + ".jar") : "plugins/" + args[1] + ".jar"));
+				File file = new File((args.length > 2 ? (args[2].equalsIgnoreCase("-i") ? args[1] : "plugins/" + args[1] + ".jar") : "plugins/" + args[1] + ".jar"));
 				if (MasterControlMain.getInstance().getServer().getPluginManager().getPlugin(args[1]) == null)
 					try {
 						final Plugin plugin = MasterControlMain.getInstance().getServer().getPluginManager().loadPlugin(file);
